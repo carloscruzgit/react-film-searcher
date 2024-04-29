@@ -1,19 +1,49 @@
 import './App.css'
-import {useRef} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import { useMovies } from './hooks/useMovies'
 import { Movies } from './components/Movies'
-import { useState } from 'react'
+
+
+function useSearch (){
+  const [search, updateSearch] = useState('')
+  const [error, setError] = useState(null)
+  const isFirstInput = useRef(true)
+
+  useEffect(() => {
+    if(isFirstInput.current){
+      isFirstInput.current = search === '' //if the search is empty, it will be true, so we return
+      return
+    }
+    if(search === ''){
+      setError('Please enter a movie title. Can\'t be empty')
+      return
+    }
+
+    if (search.length < 3){
+      setError('Please enter a movie title. Must be at least 3 characters long')
+      return
+    }
+
+    if(search.match(/^\d+$]/)){
+      setError('You can\'t enter numbers only. Please enter a movie title.')
+      return
+    }
+
+    setError(null)
+  }, [search])
+
+  return {search, updateSearch, error}
+}
 
 
 function App() {
-  const [query, setQuery] = useState()
-  const [error, setError] = useState()
-  const { movies} = useMovies()
+  const {search, updateSearch, error} = useSearch()
+  const { movies, getMovies} = useMovies({search})
   const inputRef = useRef()
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    console.log({query})
+    getMovies(search)
     /*we can also do this with the useRef
     console.log({query: inputRef.current.value})
     */
@@ -23,32 +53,15 @@ function App() {
   }
 
   const handleChange = (event) => {
-    const newQuery = event.target.value
-    setQuery(newQuery)
-
-    if(newQuery === ''){
-      setError('Please enter a movie title. Can\'t be empty')
-      return
-    }
-
-    if (newQuery.length < 3){
-      setError('Please enter a movie title. Must be at least 3 characters long')
-      return
-    }
-
-    if(newQuery.match(/^\d+$]/)){
-      setError('You can\'t enter numbers only. Please enter a movie title.')
-      return
-    }
-
-    setError(null)
+    const newSearch = event.target.value
+    updateSearch(newSearch)
   }
 
   return (
     <div className='page'>
       <header>
         <form className='form' onSubmit={handleSubmit}>
-          <input value={query} onChange={handleChange} name='filmQuery' placeholder='Avengers, Interstellar..' />
+          <input value={search} onChange={handleChange} name='filmQuery' placeholder='Avengers, Interstellar..' />
           <button type='submit'>Buscar</button>
         </form>
         {error && <p style={{color:'red'}} className='error'>{error}</p>}

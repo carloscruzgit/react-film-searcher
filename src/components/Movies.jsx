@@ -4,10 +4,9 @@ export function ListOfMovies({ movies }) {
       {
         movies.map(movie => (
           <li key={movie.id} className='movie'>
-            <h2>{movie.title}</h2>
+            <h3>{movie.title}</h3>
             <p>{movie.year}</p>
             <img src={movie.image} alt={movie.title} />
-            <hr />
           </li>
         ))
       }
@@ -17,10 +16,8 @@ export function ListOfMovies({ movies }) {
 
 export function NoMoviesResults() {
   return (
-    <div className='empty'>
-      <img src={reactLogo} alt='React Logo' />
-      <h2>No se encontraron resultados</h2>
-    </div>
+    <p>No se encontraron resultados</p>
+
   )
 }
 
