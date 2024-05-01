@@ -1,7 +1,8 @@
 import './App.css'
-import {useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import { useMovies } from './hooks/useMovies'
 import { Movies } from './components/Movies'
+import debounce from 'just-debounce-it'
 
 
 function useSearch (){
@@ -37,13 +38,21 @@ function useSearch (){
 
 
 function App() {
+  const [sort, setSort] = useState(false)
   const {search, updateSearch, error} = useSearch()
-  const { movies, getMovies} = useMovies({search})
+  const { movies, getMovies, loading} = useMovies({search, sort})
   const inputRef = useRef()
+
+  const debouncedGetMovies = useCallback(
+    debounce(search => {
+      getMovies({ search })
+    }, 300)
+    , [getMovies]
+  )
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    getMovies(search)
+    getMovies({search})
     /*we can also do this with the useRef
     console.log({query: inputRef.current.value})
     */
@@ -52,23 +61,35 @@ function App() {
     const filmQuery = fields.get('filmQuery')*/
   }
 
+  const handleSort = () => {
+    setSort(!sort)
+  }
+
   const handleChange = (event) => {
     const newSearch = event.target.value
     updateSearch(newSearch)
+    debouncedGetMovies(newSearch)
   }
 
   return (
     <div className='page'>
       <header>
         <form className='form' onSubmit={handleSubmit}>
-          <input value={search} onChange={handleChange} name='filmQuery' placeholder='Avengers, Interstellar..' />
+          <input style={{
+            border: '1px solid transparent',
+            borderColor: error ? 'red' : 'transparent'
+          }} value={search} onChange={handleChange} name='query' placeholder='Avengers, Interstellar..' />
+          <input type='checkbox' onChange={handleSort} checked={sort}/>
           <button type='submit'>Buscar</button>
         </form>
         {error && <p style={{color:'red'}} className='error'>{error}</p>}
       </header>
 
     <main>
-      <Movies movies={movies}/>    
+      {
+        loading ? <p>Loading...</p> : <Movies movies={movies}/>    
+      }
+      
     </main>
     </div>
   )

@@ -16,7 +16,7 @@ export function ListOfMovies({ movies }) {
 
 export function NoMoviesResults() {
   return (
-    <p>No se encontraron resultados</p>
+    <p>No results found</p>
 
   )
 }
